@@ -1,0 +1,110 @@
+---
+title: "EDA TripAdvisor part 1"
+output: html_notebook
+---
+
+## Objective
+
+This notebook aims to explore and summarize the data collected in the 'TripAdvisor Scrappers'. 
+The output of this notebook should be a tabulized data set and images organized for an algorithmic processing
+
+
+## Introduction
+
+We have collected a set of data inputs from 'TripAdvisor Scrappers'. A summary of the process can be found in Diagram 1. ![Diagram 1](./DECKS/IMG/Diagram_TripAdvisor_Scrapping.png)
+
+Details of the output from Scrapping_1 and Scrapping_2, can be found in ![week 1](./DECKS/Week1.html)
+Here we focus on Scrapping_3 where the data can be first analyzed. 
+
+First we need to load all libraries required for this EDA process
+
+```{r 0_loadlibs, message=TRUE, warning=TRUE, include=FALSE}
+require(tidyverse) ## Data processing
+require(purrr) ## Process files in parallel
+```
+
+Now we need to start combining files. We need to collect all the files in folder : ./SAVE2
+For this we loop through all the files created and combine them in a single data frame
+
+```{r savefile_2_master}
+
+# Provide location
+loc <- "SAVE2"
+tar <- "MASTER"
+location <- here::here(loc)
+target <- here::here(tar,"master_raw.rds")
+
+# # list all files in SAVE2
+# f1 <- list.files(path = location, full.names = TRUE)
+# 
+# # Combine all rds files to memory
+# f1 %>% purrr::map(.x = ., .f = ~ readRDS(.x)) %>% bind_rows() -> master_raw
+# 
+# # Save combination of files to disk
+# saveRDS(master_raw,file = target)
+
+```
+
+Let's see how the file looks like
+
+```{r explore_Master_Raw}
+
+## If already created simply load
+readRDS(target) -> master_raw
+
+```
+
+
+## Tabulize data
+
+The data currently has nested fields for when we find more than one image in a review. We need to convert the data set into an actual tabulized dataset
+
+
+```{r get_hotel_names}
+
+## Retrieve all the hotel names from DATA
+locDATA <- "SAVE"
+locationDATA <- here::here(locDATA)
+
+fDATA <- list.files(locationDATA,full.names = TRUE) 
+
+# Combine all rds files to memory
+fDATA %>% purrr::map(.x = ., .f = ~ readRDS(.x)) %>% bind_rows() %>% unnest(tb) -> HD
+
+```
+
+
+```{r tabulize}
+
+ master_raw %>% pull(pictures) -> lst_pic
+lst <- list()
+for(i in 1:nrow(master_raw)){
+  if(is.na(lst_pic[[i]])){next}
+  lst[[i]] <- lst_pic[[i]]
+}
+
+master_raw %>% #slice(1:150) %>%
+  unnest(cols = c(pictures), names_repair = "universal")
+
+```
+
+
+
+## Identifying Invalid entries
+
+In the master_raw file we created there are entries in which the images we downloaded were not present. We need to find out for our dataset what images exist and what images we have for analysis. 
+
+
+## Visualize some images in the data set
+
+
+
+
+## QA process - Cleanup fields in master dataset to used in pipeline
+
+We need to ensure the data we have is complete and does not have any errors in the fieldtype 
+
+
+
+
+
